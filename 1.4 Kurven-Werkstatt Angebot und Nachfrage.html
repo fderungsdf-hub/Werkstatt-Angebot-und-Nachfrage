@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kurven-Werkstatt</title>
+<style>
+:root{--bg:#f5f6f8;--ink:#161b26;--muted:#5a6475;--navy:#003366;--line:#d6dae2;--card:#fff;--soft:#eef2f8;
+--n:#0070c0;--a:#548235;--ok:#15803d;--okbg:#e8f6ec;--bad:#be123c;--badbg:#fdecef;--ue:#7c3aed;--ma:#be123c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.45;font-size:16px}
+header{background:var(--navy);color:#fff;padding:14px 20px}
+header h1{margin:0;font-size:1.35rem}
+header p{margin:3px 0 0;opacity:.85;font-size:.9rem}
+nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 20px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:.85rem;cursor:pointer;color:var(--ink)}
+nav button:hover{border-color:var(--navy)}
+nav button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+nav button.done::before{content:"✓ ";color:var(--ok);font-weight:700}
+nav button.on.done::before{color:#9be7b0}
+main{max-width:1200px;margin:0 auto;padding:18px 16px 48px}
+.st{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:22px;align-items:start}
+@media(max-width:880px){.st{grid-template-columns:1fr}}
+.right{position:sticky;top:64px}
+@media(max-width:880px){.right{position:static}}
+.kick{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h2{margin:2px 0 12px;color:var(--navy);font-size:1.45rem;line-height:1.2}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:12px}
+.card p{margin:0 0 8px}.card p:last-child{margin-bottom:0}
+.task{border-left:5px solid var(--navy)}
+.task .num{display:inline-block;font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:#fff;background:var(--navy);border-radius:4px;padding:1px 7px;margin-bottom:6px}
+.task .q{font-weight:600;margin:10px 0 6px}
+details.help summary{cursor:pointer;font-weight:600;color:var(--navy)}
+details.help ol,details.help ul{margin:8px 0 0;padding-left:20px}
+details.help li{margin-bottom:4px}
+table.tb{border-collapse:collapse;width:100%;margin-top:6px;font-size:.95rem}
+table.tb th,table.tb td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left}
+table.tb th{font-size:.78rem;color:var(--muted);font-weight:600}
+table.tb tr.ok td{background:var(--okbg)}
+table.tb td.chk{width:28px;color:var(--ok);font-weight:700}
+.btn{font:inherit;border:1px solid var(--navy);background:var(--navy);color:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;margin:4px 6px 4px 0}
+.btn.sec{background:#fff;color:var(--navy)}
+.btn.opt{background:#fff;color:var(--ink);border-color:var(--line);text-align:left;display:block;width:100%;margin:6px 0}
+.btn.opt:hover{border-color:var(--navy)}
+.btn.opt.right{background:var(--okbg);border-color:var(--ok)}
+.btn.opt.wrong{background:var(--badbg);border-color:var(--bad)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0}
+.row .lbl{min-width:70px;font-weight:600}
+.pill{font:inherit;border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 14px;cursor:pointer}
+.pill.right{background:var(--okbg);border-color:var(--ok)}
+.pill.wrong{background:var(--badbg);border-color:var(--bad)}
+input.inp{font:inherit;width:90px;background:#fff;color:var(--ink);padding:5px 8px;border:1px solid var(--line);border-radius:6px}
+input.inp.right{border-color:var(--ok);background:var(--okbg)}
+input.inp.wrong{border-color:var(--bad);background:var(--badbg)}
+.fb{border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:.95rem;display:none}
+.fb.ok{display:block;background:var(--okbg);border:1px solid #a7dcb6}
+.fb.bad{display:block;background:var(--badbg);border:1px solid #f2b8c3}
+.fb.info{display:block;background:var(--soft);border:1px solid var(--line)}
+.merk{background:#fff8e1;border:2px solid #e0b400;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-weight:600}
+.merk::before{content:"Erkenntnis";display:block;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:#8a6d00;margin-bottom:2px}
+.shot{background:#eef6ff;border:1px dashed var(--n);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.95rem}
+kbd{background:#fff;border:1px solid var(--line);border-bottom-width:3px;border-radius:4px;padding:0 5px;font-family:inherit;font-weight:600}
+.ev{background:#fff;border:2px solid var(--navy);border-radius:12px;padding:12px 16px;margin-bottom:12px}
+.ev .tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.ev .txt{font-size:1.1rem;font-weight:600;margin-top:2px}
+.ev .prod{color:var(--muted);font-size:.9rem}
+.chartcard{padding:8px 10px}
+svg.cv{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.readout{min-height:24px;font-size:.92rem;color:var(--muted);padding:2px 8px}
+.ctrl{padding:4px 8px}
+.ctrl input[type=range]{width:100%;accent-color:var(--navy)}
+.score{font-weight:700;color:var(--navy)}
+.gl{stroke:#e3e6ec;stroke-width:1}
+.ax{stroke:#111;stroke-width:2}
+.tick{font-size:13px;fill:#333}
+.axl{font-size:14px;fill:#555;font-weight:700}
+.lab{font-size:15px;font-weight:700}
+.sm{font-size:12px;fill:#333}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:dr 1s ease forwards}
+@keyframes dr{to{stroke-dashoffset:0}}
+.grab{cursor:grab}
+.intro{max-width:780px}
+.intro .card{font-size:1rem}
+.intro ol li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Kurven-Werkstatt: Angebot und Nachfrage</h1>
+  <p>Zeichnen Sie die Kurven selbst ein, mit Maus oder Touchpad. Arbeiten Sie die Stationen der Reihe nach durch.</p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const $=s=>document.querySelector(s);
+const C={n:"#0070c0",a:"#548235",red:"#c00000",ue:"#7c3aed",ma:"#be123c",navy:"#003366",ok:"#15803d"};
+let uid=0;
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in (a||{}))e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function TX(p,x,y,s,a){const t=E("text",Object.assign({x,y},a||{}),p);t.textContent=s;return t;}
+function svgPt(svg,ev){const pt=svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());}
+function clear(g){while(g.firstChild)g.removeChild(g.firstChild);}
+const chf=v=>"CHF "+v.toFixed(2);
+
+/* ---------- Diagramm-Grundgerüst ---------- */
+function makeChart(c){
+  const old=$("#cv"); const svg=document.createElementNS(NS,"svg");
+  svg.setAttribute("id","cv"); svg.setAttribute("class","cv"); old.replaceWith(svg);
+  svg.setAttribute("viewBox","0 0 640 420");
+  const L=72,R=592,Tp=48,B=360; uid++;
+  const X=v=>L+(v-c.x0)/(c.x1-c.x0)*(R-L), Y=v=>B-(v-c.y0)/(c.y1-c.y0)*(B-Tp);
+  const iX=p=>c.x0+(p-L)/(R-L)*(c.x1-c.x0), iY=p=>c.y0+(B-p)/(B-Tp)*(c.y1-c.y0);
+  const defs=E("defs",{},svg);
+  [["k","#111"],["r",C.red]].forEach(([id,col])=>{const m=E("marker",{id:"m"+id+uid,viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:7,markerHeight:7,orient:"auto-start-reverse"},defs);E("path",{d:"M0,0 L10,5 L0,10 z",fill:col},m);});
+  const g={};["grid","hit","under","lines","top","pts","hover"].forEach(k=>g[k]=E("g",{},svg));
+  if(c.title) TX(g.grid,R+20,22,c.title,{class:"lab",fill:C.navy,"text-anchor":"end"});
+  (c.xgrid||[]).forEach(v=>E("line",{x1:X(v),x2:X(v),y1:Tp,y2:B,class:"gl"},g.grid));
+  (c.ygrid||[]).forEach(v=>E("line",{x1:L,x2:R,y1:Y(v),y2:Y(v),class:"gl"},g.grid));
+  E("line",{x1:L,y1:B,x2:R+26,y2:B,class:"ax","marker-end":`url(#mk${uid})`},g.grid);
+  E("line",{x1:L,y1:B,x2:L,y2:Tp-22,class:"ax","marker-end":`url(#mk${uid})`},g.grid);
+  (c.xticks||[]).forEach(([v,s])=>TX(g.grid,X(v),B+22,s,{class:"tick","text-anchor":"middle"}));
+  (c.yticks||[]).forEach(([v,s])=>TX(g.grid,L-10,Y(v)+5,s,{class:"tick","text-anchor":"end"}));
+  if(c.brk) E("path",{d:`M${L-10},${B-12} l20,-7 M${L-10},${B-3} l20,-7`,stroke:"#111","stroke-width":2,fill:"none"},g.grid);
+  TX(g.grid,R+26,B+48,c.xlabel,{class:"axl","text-anchor":"end"});
+  TX(g.grid,6,24,c.ylabel,{class:"axl"});
+  E("rect",{x:L-6,y:Tp-12,width:R-L+22,height:B-Tp+18,fill:"transparent"},g.hit);
+  return {svg,g,X,Y,iX,iY,L,R,Tp,B,uid,c};
+}
+function inPlot(ch,p){return p.x>=ch.L-8&&p.x<=ch.R+14&&p.y>=ch.Tp-14&&p.y<=ch.B+8;}
+
+/* ---------- Seitengerüst ---------- */
+const STATIONS=[
+  {id:"start",nav:"Start"},
+  {id:"n",nav:"1 Nachfrage"},
+  {id:"a",nav:"2 Angebot"},
+  {id:"m",nav:"3 Marktpreis"},
+  {id:"s",nav:"4 Verschiebung"},
+  {id:"t",nav:"5 Training"},
+  {id:"b",nav:"6 Benzin"},
+  {id:"w",nav:"7 Wohnungen"}
+];
+const done={};
+try{Object.assign(done,JSON.parse(localStorage.getItem("kw-done")||"{}"));}catch(e){}
+function markDone(id){done[id]=true;try{localStorage.setItem("kw-done",JSON.stringify(done));}catch(e){}renderNav(id);}
+function renderNav(cur){
+  const nav=$("#nav");nav.innerHTML="";
+  STATIONS.forEach(s=>{const b=document.createElement("button");b.textContent=s.nav;
+    if(s.id===cur)b.className="on";if(done[s.id])b.classList.add("done");
+    b.onclick=()=>go(s.id);nav.appendChild(b);});
+}
+function go(id){
+  renderNav(id);window.scrollTo(0,0);
+  ({start:stStart,n:()=>stPoints("N"),a:()=>stPoints("A"),m:stMarkt,s:stKakao,t:stTraining,b:stBenzin,w:stWohnung})[id]();
+}
+function nextOf(id){const i=STATIONS.findIndex(s=>s.id===id);return STATIONS[i+1];}
+function layout(o){
+  $("#main").innerHTML=`<div class="st"><div>
+    <div class="kick">${o.kick}</div><h2>${o.title}</h2>${o.left||""}
+    <div class="card task" id="task"></div><div id="fb" class="fb"></div><div id="after"></div>
+  </div><div class="right"><div class="card chartcard"><svg id="cv" class="cv"></svg>
+    <div id="readout" class="readout"></div><div id="ctrl" class="ctrl"></div></div></div></div>`;
+}
+function setTask(h){$("#task").innerHTML=h;}
+function fb(msg,type){const f=$("#fb");f.className="fb "+(type||"info");f.innerHTML=msg;}
+function fbOff(){$("#fb").className="fb";}
+function finish(id,aufgabe,merk){
+  markDone(id);
+  const nx=nextOf(id);
+  $("#after").innerHTML=(merk?`<div class="merk">${merk}</div>`:"")+
+   `<div class="shot"><b>Für OneNote:</b> Machen Sie mit <kbd>Windows</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> einen Screenshot vom Diagramm und fügen Sie ihn in OneNote ${aufgabe} ein.</div>`+
+   (nx?`<button class="btn" id="nextBtn">Weiter: ${nx.nav.replace(/^\d+ /,"")} →</button>`:`<div class="merk">Sie haben alle Stationen geschafft.</div>`);
+  if(nx)$("#nextBtn").onclick=()=>go(nx.id);
+}
+/* Auswahlfrage */
+function quiz(parent,q,opts,right,wrongMsg,onRight){
+  const box=document.createElement("div");box.innerHTML=`<div class="q">${q}</div>`;parent.appendChild(box);
+  let solved=false;
+  opts.forEach((t,i)=>{const b=document.createElement("button");b.className="btn opt";b.textContent=t;
+    b.onclick=()=>{if(solved)return;
+      if(i===right){b.classList.add("right");solved=true;fbOff();onRight&&onRight();}
+      else{b.classList.add("wrong");fb(wrongMsg,"bad");}};
+    box.appendChild(b);});
+  return box;
+}
+
+/* ---------- Start ---------- */
+function stStart(){
+  $("#main").innerHTML=`<div class="intro">
+   <div class="kick">Begleitend zum Dossier «Angebot und Nachfrage»</div>
+   <h2>So arbeiten Sie mit der Kurven-Werkstatt</h2>
+   <div class="card"><ol>
+     <li>Die Werkstatt hat sieben Stationen. Sie passen zum Dossier: Stationen 1 bis 3 gehören zur Theorie und zu Aufgabe 3, Station 4 zu Aufgabe 4, Station 5 zu Aufgabe 5, Station 6 zu Aufgabe 9 und Station 7 zu Aufgabe 11.</li>
+     <li>Sie zeichnen mit der <b>Maus</b> oder dem <b>Touchpad</b>: Punkte setzen Sie mit einem Klick. Kurven verschieben Sie, indem Sie sie anklicken und ziehen.</li>
+     <li>Lesen Sie bei jedem Schritt zuerst den Auftrag. Wenn Sie nicht weiterkommen, öffnen Sie <b>«So gehen Sie vor»</b> oder <b>«Tipp»</b>.</li>
+     <li>Am Ende jeder Station machen Sie mit <kbd>Windows</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> einen Screenshot und fügen ihn in OneNote bei der passenden Aufgabe ein.</li>
+   </ol></div>
+   <button class="btn" id="go1">Los geht's: Station 1 →</button></div>`;
+  $("#go1").onclick=()=>go("n");
+}
+
+/* ---------- Marktdaten Erdbeeren ---------- */
+const DN=[[2,160],[3,130],[4,100],[5,70],[6,40]], DA=[[2,40],[3,70],[4,100],[5,130],[6,160]];
+const fN=q=>4-(q-100)/30, fA=q=>4+(q-100)/30;
+const qN=p=>100-30*(p-4), qA=p=>100+30*(p-4);
+const MK={x0:0,x1:185,y0:0,y1:7.3,title:"Erdbeeren am Wochenmarkt",
+  xgrid:[20,40,60,80,100,120,140,160,180],ygrid:[1,2,3,4,5,6,7],
+  xticks:[20,40,60,80,100,120,140,160,180].map(v=>[v,String(v)]),
+  yticks:[0,1,2,3,4,5,6,7].map(v=>[v,String(v)]),xlabel:"Menge in Schalen",ylabel:"Preis in CHF"};
+function marketLine(ch,which,o){
+  o=o||{};const f=which==="N"?fN:fA,col=which==="N"?C.n:C.a;
+  const ln=E("line",{x1:ch.X(25),y1:ch.Y(f(25)),x2:ch.X(175),y2:ch.Y(f(175)),stroke:col,"stroke-width":4,"stroke-linecap":"round",opacity:o.faded?.3:1},ch.g.lines);
+  if(o.anim){ln.setAttribute("pathLength","1");ln.setAttribute("class","draw");}
+  if(which==="N")TX(ch.g.lines,ch.X(175),ch.Y(1.5)+26,"Nachfrage (N)",{class:"lab",fill:col,"text-anchor":"end",opacity:o.faded?.4:1});
+  else TX(ch.g.lines,ch.X(175),ch.Y(6.5)-12,"Angebot (A)",{class:"lab",fill:col,"text-anchor":"end",opacity:o.faded?.4:1});
+}
+function crosshair(ch,q,p,col){
+  clear(ch.g.hover);
+  E("line",{x1:ch.L,y1:ch.Y(p),x2:ch.X(q),y2:ch.Y(p),stroke:"#888","stroke-dasharray":"4 4"},ch.g.hover);
+  E("line",{x1:ch.X(q),y1:ch.Y(p),x2:ch.X(q),y2:ch.B,stroke:"#888","stroke-dasharray":"4 4"},ch.g.hover);
+  E("circle",{cx:ch.X(q),cy:ch.Y(p),r:7,fill:col||"#888",opacity:.35},ch.g.hover);
+}
+
+/* ---------- Station 1 und 2: Punkte setzen ---------- */
+function stPoints(kind){
+  const isN=kind==="N",data=isN?DN:DA,col=isN?C.n:C.a,id=isN?"n":"a",name=isN?"Nachfrage":"Angebot";
+  layout({kick:`Station ${isN?1:2} · Theorie «Angebot und Nachfrage»`,
+    title:isN?"Die Nachfragekurve selbst einzeichnen":"Die Angebotskurve selbst einzeichnen",
+    left:`<div class="card"><p>${isN?
+      "Am Samstag ist in der Churer Altstadt Wochenmarkt. Ein Gemüsebauer verkauft Erdbeeren. Er hat beobachtet, wie viele Schalen die Leute bei welchem Preis kaufen wollen.":
+      "Jetzt die andere Marktseite: Wie viele Schalen bringen die Bauern auf den Markt? Auch das hängt vom Preis ab, den sie dafür erhalten."}</p>
+      <table class="tb"><thead><tr><th>Preis pro Schale</th><th>${isN?"Käufer wollen kaufen":"Bauern wollen verkaufen"}</th><th></th></tr></thead><tbody>
+      ${data.map((d,i)=>`<tr id="r${i}"><td>CHF ${d[0]}.00</td><td>${d[1]} Schalen</td><td class="chk"></td></tr>`).join("")}
+      </tbody></table></div>
+      <details class="card help" ${isN?"open":""}><summary>So gehen Sie vor</summary><ol>
+      <li>Suchen Sie den Preis auf der <b>senkrechten Achse</b> (Preis in CHF).</li>
+      <li>Fahren Sie mit der Maus <b>waagrecht nach rechts</b>, bis unten die richtige Menge steht. Die Anzeige unter dem Diagramm hilft Ihnen.</li>
+      <li><b>Klicken</b> Sie. Ein Punkt erscheint.</li>
+      <li>Falsch gesetzt? Klicken Sie nochmals auf den Punkt, dann verschwindet er.</li></ol></details>`});
+  setTask(`<span class="num">Schritt 1</span><p>Tragen Sie die fünf Werte aus der Tabelle als Punkte ins Diagramm ein.</p>`);
+  const ch=makeChart(MK);
+  if(!isN)marketLine(ch,"N",{faded:true});
+  let pts=[],connected=false;
+  function snap(pt){return {q:Math.round(ch.iX(pt.x)/10)*10,p:Math.round(ch.iY(pt.y)*2)/2};}
+  const isRight=(q,p)=>data.some(d=>d[0]===p&&d[1]===q);
+  function render(){
+    clear(ch.g.pts);
+    pts.forEach(o=>E("circle",{cx:ch.X(o.q),cy:ch.Y(o.p),r:7,fill:isRight(o.q,o.p)?col:C.ma,stroke:"#fff","stroke-width":2},ch.g.pts));
+    data.forEach((d,i)=>{const ok=pts.some(o=>o.q===d[1]&&o.p===d[0]);const r=$("#r"+i);r.classList.toggle("ok",ok);r.querySelector(".chk").textContent=ok?"✓":"";});
+    const wrong=pts.filter(o=>!isRight(o.q,o.p)).length, right=pts.length-wrong;
+    if(wrong)fb(`<b>${wrong===1?"Ein Punkt stimmt":"Einige Punkte stimmen"} noch nicht</b> (rot). Vergleichen Sie Preis und Menge mit der Tabelle. Klicken Sie auf den roten Punkt, um ihn zu entfernen.`,"bad");
+    else if(right===5){fb("Alle fünf Punkte stimmen!","ok");
+      setTask(`<span class="num">Schritt 2</span><p>Verbinden Sie die Punkte zu einer Linie. Das ist die ${name}skurve.</p><button class="btn" id="conn">Punkte verbinden</button>`);
+      $("#conn").onclick=connect;}
+    else if(right>0)fb(`${right} von 5 Punkten richtig. Weiter so!`,"info");
+    else fbOff();
+  }
+  function connect(){
+    connected=true;clear(ch.g.hover);$("#readout").textContent="";marketLine(ch,kind,{anim:true});fbOff();
+    setTask(`<span class="num">Schritt 3</span><p>Schauen Sie die Kurve genau an.</p><div id="qz"></div>`);
+    const qz=$("#qz");
+    quiz(qz,`Wie verläuft die ${name}skurve?`,
+      ["Sie steigt von links unten nach rechts oben.","Sie fällt von links oben nach rechts unten.","Sie verläuft waagrecht."],
+      isN?1:0,"Nicht ganz. Fahren Sie mit dem Finger der Linie entlang, von links nach rechts.",
+      ()=>quiz(qz,"Warum verläuft sie so?",
+        isN?["Ist der Preis tief, wollen mehr Leute Erdbeeren kaufen, und viele kaufen gleich mehrere Schalen.","Ist der Preis tief, gibt es mehr Erdbeeren auf dem Markt."]
+           :["Ist der Preis hoch, lohnt es sich für die Bauern, mehr Erdbeeren zu pflücken und auf den Markt zu bringen.","Ist der Preis hoch, wollen mehr Leute Erdbeeren kaufen."],
+        0,isN?"Das stimmt nicht. Hier geht es um die Käufer: Was machen sie, wenn die Erdbeeren günstig sind?":"Das stimmt nicht. Hier geht es um die Bauern: Wann lohnt sich für sie das Pflücken?",
+        ()=>finish(id,`bei der Theorie «Angebot und Nachfrage»`,isN?"Je tiefer der Preis, desto grösser die Nachfrage. Die Nachfragekurve fällt von links oben nach rechts unten.":"Je höher der Preis, desto grösser das Angebot. Die Angebotskurve steigt von links unten nach rechts oben.")));
+  }
+  ch.svg.addEventListener("pointermove",ev=>{if(connected)return;const pt=svgPt(ch.svg,ev);
+    if(!inPlot(ch,pt)){clear(ch.g.hover);$("#readout").textContent="";return;}
+    const s=snap(pt);if(s.q<10||s.q>180||s.p<0.5||s.p>7){clear(ch.g.hover);return;}
+    crosshair(ch,s.q,s.p,col);$("#readout").innerHTML=`Preis: <b>${chf(s.p)}</b> · Menge: <b>${s.q} Schalen</b>`;});
+  ch.svg.addEventListener("pointerleave",()=>{clear(ch.g.hover);$("#readout").textContent="";});
+  ch.svg.addEventListener("pointerdown",ev=>{if(connected)return;const pt=svgPt(ch.svg,ev);if(!inPlot(ch,pt))return;
+    const s=snap(pt);if(s.q<10||s.q>180||s.p<0.5||s.p>7)return;
+    const i=pts.findIndex(o=>o.q===s.q&&o.p===s.p);
+    if(i>=0)pts.splice(i,1);else{if(pts.length>=8){fb("Zu viele Punkte. Entfernen Sie zuerst die roten Punkte.","bad");return;}pts.push(s);}
+    render();});
+}
+
+/* ---------- Station 3: Marktpreis, Überschuss, Mangel ---------- */
+function stMarkt(){
+  layout({kick:"Station 3 · Theorie «So entsteht der Marktpreis» und Aufgabe 3",title:"Wo treffen sich Angebot und Nachfrage?",
+    left:`<div class="card"><p>Jetzt sind beide Kurven im gleichen Diagramm. Finden Sie heraus, bei welchem Preis der Bauer genau so viele Schalen verkaufen will, wie die Leute kaufen wollen.</p></div>`});
+  const ch=makeChart(MK);marketLine(ch,"N");marketLine(ch,"A");
+  let phase="cross",price=5,dragging=false;
+  setTask(`<span class="num">Schritt 1</span><p>Klicken Sie auf den Punkt, an dem sich die beiden Kurven <b>kreuzen</b>.</p>`);
+  function eqMark(){
+    clear(ch.g.under);
+    E("line",{x1:ch.L,y1:ch.Y(4),x2:ch.X(100),y2:ch.Y(4),stroke:C.ok,"stroke-dasharray":"5 4","stroke-width":2},ch.g.under);
+    E("line",{x1:ch.X(100),y1:ch.Y(4),x2:ch.X(100),y2:ch.B,stroke:C.ok,"stroke-dasharray":"5 4","stroke-width":2},ch.g.under);
+    E("circle",{cx:ch.X(100),cy:ch.Y(4),r:9,fill:C.ok,stroke:"#fff","stroke-width":2},ch.g.pts);
+    TX(ch.g.pts,ch.X(100)+14,ch.Y(4)+24,"Gleichgewicht",{class:"lab",fill:C.ok,id:"eqlab"});
+  }
+  function drawPrice(){
+    clear(ch.g.top);
+    const y=ch.Y(price),xn=ch.X(qN(price)),xa=ch.X(qA(price));
+    E("line",{x1:ch.L,y1:y,x2:ch.R,y2:y,stroke:C.navy,"stroke-width":2,"stroke-dasharray":"8 5"},ch.g.top);
+    if(price!==4){
+      const isU=price>4,col=isU?C.ue:C.ma;
+      E("line",{x1:Math.min(xn,xa),y1:y,x2:Math.max(xn,xa),y2:y,stroke:col,"stroke-width":9,opacity:.45,"stroke-linecap":"round"},ch.g.top);
+      TX(ch.g.top,(xn+xa)/2,y-12,isU?"Überschuss":"Mangel",{class:"lab",fill:col,"text-anchor":"middle"});
+      [[xn,C.n],[xa,C.a]].forEach(([x,c])=>{E("line",{x1:x,y1:y,x2:x,y2:ch.B,stroke:c,"stroke-dasharray":"3 4","stroke-width":2},ch.g.top);E("circle",{cx:x,cy:y,r:6,fill:c,stroke:"#fff","stroke-width":2},ch.g.top);});
+    }
+    E("circle",{cx:ch.L,cy:y,r:10,fill:C.navy,class:"grab"},ch.g.top);
+    TX(ch.g.top,ch.L+16,y+(price>5.5?22:-10),"Preis "+chf(price),{class:"lab",fill:C.navy});
+    const rg=$("#rng");if(rg)rg.value=price;
+    $("#readout").innerHTML=`Preis: <b>${chf(price)}</b>. Lesen Sie die Mengen unten auf der Achse ab.`;
+  }
+  function setPrice(p){p=Math.max(1.5,Math.min(6.5,Math.round(p*2)/2));if(p!==price){price=p;drawPrice();}}
+  ch.svg.addEventListener("pointermove",ev=>{const pt=svgPt(ch.svg,ev);
+    if(phase==="cross"){if(!inPlot(ch,pt)){clear(ch.g.hover);return;}const q=Math.round(ch.iX(pt.x)/10)*10,p=Math.round(ch.iY(pt.y)*2)/2;crosshair(ch,q,p);$("#readout").innerHTML=`Preis: <b>${chf(p)}</b> · Menge: <b>${q} Schalen</b>`;}
+    if(phase==="slide"&&dragging)setPrice(ch.iY(pt.y));});
+  ch.svg.addEventListener("pointerdown",ev=>{const pt=svgPt(ch.svg,ev);if(!inPlot(ch,pt))return;
+    if(phase==="cross"){
+      const q=ch.iX(pt.x),p=ch.iY(pt.y);
+      if(Math.abs(q-100)<9&&Math.abs(p-4)<.4){phase="input";clear(ch.g.hover);eqMark();fb("Genau! Hier kreuzen sich die Kurven.","ok");
+        setTask(`<span class="num">Schritt 2</span><p>Lesen Sie an den gestrichelten Linien ab:</p>
+          <div class="row"><span class="lbl">Marktpreis</span> CHF <input class="inp" id="i1" inputmode="decimal"></div>
+          <div class="row"><span class="lbl">Menge</span><input class="inp" id="i2" inputmode="numeric"> Schalen</div>
+          <button class="btn" id="chk">Prüfen</button>`);
+        $("#chk").onclick=()=>{const a=parseFloat($("#i1").value.replace(",",".")),b=parseFloat($("#i2").value);
+          $("#i1").className="inp "+(a===4?"right":"wrong");$("#i2").className="inp "+(b===100?"right":"wrong");
+          if(a===4&&b===100){fb("Richtig: Bei CHF 4.00 wollen die Käufer 100 Schalen kaufen, und die Bauern wollen 100 Schalen verkaufen. Das ist der <b>Marktpreis</b> (Gleichgewichtspreis).","ok");startSlide();}
+          else fb("Noch nicht. Den Preis lesen Sie links auf der senkrechten Achse ab, die Menge unten auf der waagrechten Achse.","bad");};
+      } else fb("Noch nicht ganz. Suchen Sie die Stelle, an der sich die blaue und die grüne Linie schneiden.","bad");
+    } else if(phase==="slide"){dragging=true;ch.svg.setPointerCapture(ev.pointerId);setPrice(ch.iY(pt.y));}
+  });
+  ch.svg.addEventListener("pointerup",()=>{dragging=false;});
+  ch.svg.addEventListener("pointerleave",()=>{if(phase==="cross")clear(ch.g.hover);});
+  function startSlide(){
+    phase="slide";const el=document.getElementById("eqlab");if(el)el.remove();
+    $("#ctrl").innerHTML=`<label>Preis verändern: <input type="range" id="rng" min="1.5" max="6.5" step="0.5" value="5"></label>`;
+    $("#rng").oninput=e=>setPrice(parseFloat(e.target.value));
+    drawPrice();
+    setTask(`<span class="num">Schritt 3</span><p>Was passiert, wenn der Bauer einen anderen Preis verlangt? Ziehen Sie die <b>Preislinie</b> im Diagramm nach oben oder unten (oder benutzen Sie den Regler).</p>
+      <div class="q">a) Der Bauer verlangt CHF 6. Wie viele Schalen bleiben übrig?</div>
+      <div class="row"><input class="inp" id="u1" inputmode="numeric"> Schalen</div>
+      <div class="q">b) Der Bauer verlangt nur CHF 3. Wie viele Schalen fehlen?</div>
+      <div class="row"><input class="inp" id="u2" inputmode="numeric"> Schalen</div>
+      <button class="btn" id="chk2">Prüfen</button>
+      <details class="help"><summary>Tipp</summary><p>Stellen Sie die Preislinie auf den Preis. Lesen Sie unten zwei Mengen ab: Wie viel wollen die Käufer kaufen (blau)? Wie viel wollen die Bauern verkaufen (grün)? Rechnen Sie dann: grössere Menge minus kleinere Menge.</p></details>`);
+    $("#chk2").onclick=()=>{const a=parseFloat($("#u1").value),b=parseFloat($("#u2").value);
+      $("#u1").className="inp "+(a===120?"right":"wrong");$("#u2").className="inp "+(b===60?"right":"wrong");
+      if(a===120&&b===60){fb("Richtig! Bei CHF 6 bleiben 160 − 40 = 120 Schalen übrig (<b>Überschuss</b>). Bei CHF 3 fehlen 130 − 70 = 60 Schalen (<b>Mangel</b>).","ok");askReact();}
+      else fb("Noch nicht ganz. Öffnen Sie den Tipp.","bad");};
+  }
+  function askReact(){
+    setTask(`<span class="num">Schritt 4</span><p>Was macht der Bauer?</p><div id="qz"></div>`);
+    const qz=$("#qz");
+    quiz(qz,"Bei CHF 6 bleibt er auf vielen Erdbeeren sitzen (Überschuss). Was macht er nächsten Samstag?",
+      ["Er senkt den Preis.","Er erhöht den Preis."],0,"Überlegen Sie: Mit einem noch höheren Preis verkauft er noch weniger.",
+      ()=>quiz(qz,"Bei CHF 3 ist um neun Uhr alles ausverkauft (Mangel). Was macht er nächsten Samstag?",
+        ["Er senkt den Preis.","Er erhöht den Preis."],1,"Überlegen Sie: Viele gingen leer aus. Sie hätten auch mehr bezahlt.",
+        ()=>{setTask(`<span class="num">Schritt 5</span><p>Schauen Sie zu, wie sich der Preis einpendelt.</p><button class="btn" id="anim">Preis einpendeln lassen</button>`);
+          $("#anim").onclick=()=>{const seq=[6,5.5,3,3.5,4.5,4];seq.forEach((p,i)=>setTimeout(()=>{price=p;drawPrice();
+            if(i===seq.length-1)finish("m","bei Aufgabe 3","Liegt der Preis zu hoch, entsteht ein Überschuss und der Preis sinkt. Liegt er zu tief, entsteht ein Mangel und der Preis steigt. So pendelt sich der Preis beim Marktpreis ein.");},i*700));};}));
+  }
+}
+
+/* ---------- Verschiebungs-Werkzeug (Station 4, 5, 7) ---------- */
+const AB={x0:0,x1:10,y0:0,y1:10,xgrid:[1,2,3,4,5,6,7,8,9],ygrid:[1,2,3,4,5,6,7,8,9],xticks:[],yticks:[],xlabel:"Menge",ylabel:"Preis"};
+function seg(m,c){const lo=.3,hi=9.7;const xs=[(lo-c)/m,(hi-c)/m].sort((a,b)=>a-b);const xa=Math.max(lo,xs[0]),xb=Math.min(hi,xs[1]);return [[xa,m*xa+c],[xb,m*xb+c]];}
+const cNof=d=>9.5+.75*d, cAof=d=>1-.75*d;
+function eqOf(cn,ca){const x=(cn-ca)/1.5;return [x,.75*x+ca];}
+function shiftTool(ev,host,onDone){
+  // host: {title} ; ev: {curve:'N'|'A', dir:+1|-1, cause, preset}
+  const ch=makeChart(Object.assign({},AB,{title:ev.title||""}));
+  let d={N:0,A:0},phase=ev.preset?"drag":"choose",drag=null;
+  const nm=k=>k==="N"?"Nachfragekurve":"Angebotskurve";
+  function line(k,dd,o){
+    const m=k==="N"?-.75:.75,c=k==="N"?cNof(dd):cAof(dd),col=k==="N"?C.n:C.a,[[x1,y1],[x2,y2]]=seg(m,c);
+    const attrs={x1:ch.X(x1),y1:ch.Y(y1),x2:ch.X(x2),y2:ch.Y(y2),stroke:col,"stroke-width":4,"stroke-linecap":"round"};
+    const ln=E("line",attrs,ch.g.lines);if(o.ghost){ln.setAttribute("stroke-dasharray","8 6");ln.setAttribute("opacity",".45");}
+    const lab=k==="N"?[ch.X(x2),ch.Y(y2)+24]:[ch.X(x2),ch.Y(y2)-10];
+    TX(ch.g.lines,lab[0],lab[1],o.label,{class:"lab",fill:col,"text-anchor":"end",opacity:o.ghost?.55:1});
+    if(o.drag){const h=E("line",Object.assign({},attrs,{stroke:"transparent","stroke-width":30,class:"grab","data-k":k}),ch.g.lines);h.setAttribute("opacity","1");
+      E("line",Object.assign({},attrs,{stroke:col,"stroke-width":10,opacity:.18,"pointer-events":"none"}),ch.g.lines);}
+  }
+  function pt(x,y,lab,col){
+    E("line",{x1:ch.L,y1:ch.Y(y),x2:ch.X(x),y2:ch.Y(y),stroke:"#666","stroke-dasharray":"4 4"},ch.g.under);
+    E("line",{x1:ch.X(x),y1:ch.Y(y),x2:ch.X(x),y2:ch.B,stroke:"#666","stroke-dasharray":"4 4"},ch.g.under);
+    E("circle",{cx:ch.X(x),cy:ch.Y(y),r:7,fill:col||C.navy,stroke:"#fff","stroke-width":2},ch.g.pts);
+    TX(ch.g.pts,ch.X(x)+10,ch.Y(y)-8,lab,{class:"lab",fill:col||C.navy});
+  }
+  function draw(){
+    clear(ch.g.lines);clear(ch.g.under);clear(ch.g.pts);clear(ch.g.top);
+    const res=phase==="result"||phase==="ask"||phase==="end";
+    ["N","A"].forEach(k=>{
+      const moved=d[k]!==0;
+      if(moved)line(k,0,{ghost:true,label:k+"1"});
+      line(k,d[k],{label:moved?k+"2":(k==="N"?"Nachfrage (N)":"Angebot (A)"),drag:phase==="drag"&&k===ev.curve});
+    });
+    const [x1,y1]=eqOf(cNof(0),cAof(0));
+    if(res){
+      const [x2,y2]=eqOf(cNof(d.N),cAof(d.A));
+      pt(x1,y1,"P1","#555");pt(x2,y2,"P2",C.navy);
+      const up2=y2>y1, r2=x2>x1;
+      TX(ch.g.under,ch.L-6,ch.Y(y1)+4+(up2?10:-4),"vorher",{class:"sm","text-anchor":"end"});
+      TX(ch.g.under,ch.L-6,ch.Y(y2)+4+(up2?-4:10),"nachher",{class:"sm","text-anchor":"end"});
+      TX(ch.g.under,ch.X(x1)+(r2?-4:4),ch.B+18,"vorher",{class:"sm","text-anchor":r2?"end":"start"});
+      TX(ch.g.under,ch.X(x2)+(r2?4:-4),ch.B+18,"nachher",{class:"sm","text-anchor":r2?"start":"end"});
+      const k=ev.curve,yy=k==="N"?7:3,xo=k==="N"?(9.5-yy)/.75:(yy-1)/.75;
+      E("line",{x1:ch.X(xo),y1:ch.Y(yy),x2:ch.X(xo+d[k])+(d[k]>0?-6:6),y2:ch.Y(yy),stroke:C.red,"stroke-width":3,"marker-end":`url(#mr${ch.uid})`},ch.g.top);
+    } else {
+      E("circle",{cx:ch.X(x1),cy:ch.Y(y1),r:5,fill:"#555"},ch.g.pts);
+    }
+  }
+  function tween(k,to,cb){const from=d[k],t0=performance.now();
+    (function st(t){const f=Math.min(1,(t-t0)/280);d[k]=from+(to-from)*(1-Math.pow(1-f,3));draw();if(f<1)requestAnimationFrame(st);else{d[k]=to;draw();cb&&cb();}})(t0);}
+  ch.svg.addEventListener("pointerdown",e=>{if(phase!=="drag")return;const k=e.target.getAttribute&&e.target.getAttribute("data-k");
+    if(!k){fb(`Klicken Sie direkt auf die ${nm(ev.curve)} und ziehen Sie sie.`,"info");return;}
+    drag={k,x0:ch.iX(svgPt(ch.svg,e).x),d0:d[k]};ch.svg.setPointerCapture(e.pointerId);ch.svg.style.cursor="grabbing";});
+  ch.svg.addEventListener("pointermove",e=>{if(!drag)return;const x=ch.iX(svgPt(ch.svg,e).x);d[drag.k]=Math.max(-3.5,Math.min(3.5,drag.d0+x-drag.x0));draw();});
+  ch.svg.addEventListener("pointerup",()=>{if(!drag)return;const k=drag.k;drag=null;ch.svg.style.cursor="";
+    const v=d[k];
+    if(Math.abs(v)<.7){fb("Ziehen Sie die Kurve deutlich nach links oder nach rechts.","info");tween(k,0);return;}
+    if(Math.sign(v)===ev.dir){phase="result";fb(`Richtig! Die ${nm(k)} verschiebt sich nach <b>${ev.dir>0?"rechts":"links"}</b>.`,"ok");tween(k,2*ev.dir,ask);}
+    else{fb(k==="A"?"Noch nicht. Überlegen Sie: Gibt es nach dem Ereignis <b>mehr oder weniger</b> zu kaufen? Mehr Angebot = Kurve nach rechts, weniger Angebot = Kurve nach links.":
+      "Noch nicht. Überlegen Sie: Wollen die Leute nach dem Ereignis <b>mehr oder weniger</b> kaufen? Mehr Nachfrage = Kurve nach rechts, weniger Nachfrage = Kurve nach links.","bad");tween(k,0);}});
+  function startDrag(){
+    phase="drag";draw();
+    setTask(`<span class="num">Schritt ${ev.preset?1:2}</span><p>Klicken Sie auf die <b>${nm(ev.curve)}</b> und ziehen Sie sie mit der Maus in die richtige Richtung.</p>
+      <details class="help"><summary>Tipp</summary><ul><li><b>Nach rechts</b> heisst: Bei jedem Preis wird <b>mehr</b> ${ev.curve==="N"?"gekauft":"angeboten"}.</li><li><b>Nach links</b> heisst: Bei jedem Preis wird <b>weniger</b> ${ev.curve==="N"?"gekauft":"angeboten"}.</li></ul></details>`);
+  }
+  function ask(){
+    phase="ask";draw();
+    const pUp=ev.curve==="N"?ev.dir>0:ev.dir<0, qUp=ev.dir>0;
+    setTask(`<span class="num">Schritt ${ev.preset?2:3}</span><p>Vergleichen Sie P1 (vorher) und P2 (nachher).</p>
+      <div class="row"><span class="lbl">Preis</span><button class="pill" data-g="p" data-v="1">steigt</button><button class="pill" data-g="p" data-v="0">sinkt</button></div>
+      <div class="row"><span class="lbl">Menge</span><button class="pill" data-g="q" data-v="1">steigt</button><button class="pill" data-g="q" data-v="0">sinkt</button></div>`);
+    const ok={p:false,q:false};
+    $("#task").querySelectorAll(".pill").forEach(b=>b.onclick=()=>{const g=b.dataset.g,v=b.dataset.v==="1",want=g==="p"?pUp:qUp;
+      $("#task").querySelectorAll(`.pill[data-g=${g}]`).forEach(x=>x.className="pill");
+      if(v===want){b.classList.add("right");ok[g]=true;}else{b.classList.add("wrong");ok[g]=false;
+        fb(g==="p"?"Schauen Sie links auf die Preisachse: Liegt «nachher» höher oder tiefer als «vorher»?":"Schauen Sie unten auf die Mengenachse: Liegt «nachher» weiter rechts oder weiter links?","bad");}
+      if(ok.p&&ok.q){phase="end";
+        const sent=`Wegen ${ev.cause} verschiebt sich die ${nm(ev.curve)} nach ${ev.dir>0?"rechts":"links"}. Dadurch ${pUp?"steigt":"sinkt"} der Preis, und die verkaufte Menge ${qUp?"steigt":"sinkt"}.`;
+        fb("Richtig! So können Sie es erklären:<br><i>«"+sent+"»</i>","ok");onDone&&onDone(sent);}});
+  }
+  if(ev.preset){startDrag();return;}
+  draw();
+  setTask(`<span class="num">Schritt 1</span><p>Welche Kurve ist vom Ereignis betroffen?</p>
+    <div class="row"><button class="pill" id="cN">Nachfrage</button><button class="pill" id="cA">Angebot</button></div>
+    <details class="help"><summary>Tipp</summary><ul><li>Betrifft das Ereignis die <b>Kundschaft</b>, also was sie kaufen will oder kann (Einkommen, Trends, Wetter, Preise anderer Produkte)? Dann ist es die <b>Nachfrage</b>.</li>
+    <li>Betrifft es die <b>Unternehmen</b> (Kosten, Ernte, Technik, Anzahl Anbieter)? Dann ist es das <b>Angebot</b>.</li></ul></details>`);
+  ["N","A"].forEach(k=>$("#c"+k).onclick=()=>{
+    if(k===ev.curve){$("#c"+k).classList.add("right");fb(`Richtig, es geht um ${k==="N"?"die Nachfrage":"das Angebot"}.`,"ok");setTimeout(startDrag,600);}
+    else{$("#c"+k).classList.add("wrong");fb(k==="N"?"Nicht ganz. Ändert sich wirklich etwas bei der Kundschaft? Oder eher bei den Unternehmen, die das Produkt herstellen?":"Nicht ganz. Ändert sich wirklich etwas bei den Unternehmen? Oder eher bei der Kundschaft, die das Produkt kauft?","bad");}
+  });
+}
+
+/* ---------- Station 4: Kakao ---------- */
+function stKakao(){
+  layout({kick:"Station 4 · Theorie «Was die Kurven verschiebt» und Aufgabe 4",title:"Kakao: Eine Kurve verschieben",
+    left:`<div class="ev"><div class="tag">Ereignis</div><div class="txt">Schlechte Ernten, Pflanzenkrankheiten und alte Kakaobäume in Westafrika.</div><div class="prod">Markt: Kakao</div></div>
+    <div class="card"><p>Ändert sich nur der Preis, verschiebt sich keine Kurve. Verändert sich aber etwas <b>ausserhalb des Preises</b>, verschiebt sich eine ganze Kurve. Probieren Sie es aus.</p></div>`});
+  shiftTool({curve:"A",dir:-1,cause:"der schlechten Ernte",title:"Kakaomarkt"},null,()=>finish("s","bei Aufgabe 4","Sinkt das Angebot, verschiebt sich die Angebotskurve nach links: Der Preis steigt, die Menge sinkt."));
+}
+
+/* ---------- Station 5: Training ---------- */
+const EVENTS=[
+  {txt:"Ein bekannter Influencer trägt in jedem Video ein neues Sneaker-Modell.",prod:"Sneakers",curve:"N",dir:1,cause:"des Trends auf Social Media"},
+  {txt:"Ein verregneter Sommer: Kaum jemand geht in die Badi.",prod:"Glacé in der Badi",curve:"N",dir:-1,cause:"des schlechten Wetters"},
+  {txt:"Die Löhne in den Bäckereien steigen deutlich.",prod:"Brot",curve:"A",dir:-1,cause:"der höheren Lohnkosten"},
+  {txt:"Eine neue Maschine macht die Herstellung von Velos günstiger.",prod:"Velos",curve:"A",dir:1,cause:"der neuen Technik"},
+  {txt:"In der Stadt eröffnen drei neue Pizzerias.",prod:"Pizza",curve:"A",dir:1,cause:"der neuen Anbieter"},
+  {txt:"Alle Lernenden erhalten einen höheren Lohn.",prod:"Kinotickets",curve:"N",dir:1,cause:"des höheren Einkommens"},
+  {txt:"Butter wird plötzlich viel teurer.",prod:"Margarine",curve:"N",dir:1,cause:"des höheren Butterpreises"},
+  {txt:"Ein Hagelsturm zerstört einen grossen Teil der Apfelernte.",prod:"Äpfel",curve:"A",dir:-1,cause:"der schlechten Ernte"},
+  {txt:"Eine Studie zeigt: Energydrinks schaden dem Schlaf. Viele Medien berichten darüber.",prod:"Energydrinks",curve:"N",dir:-1,cause:"der negativen Berichte"}
+];
+function stTraining(){
+  let i=0,solved=0;
+  const order=EVENTS.map((e,k)=>k).sort(()=>Math.random()-.5);
+  function show(){
+    const ev=EVENTS[order[i]];
+    layout({kick:"Station 5 · Training zu Aufgabe 5",title:"Training: Welche Kurve, welche Richtung?",
+      left:`<div class="card"><span class="score">Ereignis ${i+1} von ${EVENTS.length}</span> · geschafft: ${solved}</div>
+      <div class="ev"><div class="tag">Ereignis</div><div class="txt">${ev.txt}</div><div class="prod">Markt: ${ev.prod}</div></div>`});
+    shiftTool(Object.assign({title:"Markt: "+ev.prod},ev),null,()=>{solved++;
+      if(i<EVENTS.length-1){$("#after").innerHTML=`<button class="btn" id="nx">Nächstes Ereignis →</button>`;$("#nx").onclick=()=>{i++;show();};}
+      else finish("t","bei Aufgabe 5 (ein Beispiel genügt)","Nachfrage: Einkommen, Trends, Wetter, Preise anderer Produkte. Angebot: Kosten, Ernte, Technik, Anzahl Anbieter. Mehr = nach rechts, weniger = nach links.");});
+  }
+  show();
+}
+
+/* ---------- Station 6: Benzin ---------- */
+const BZ=[["9. März","9.3.",1.70],["29. April","29.4.",1.90],["27. Juli","27.7.",1.96],["20. August","20.8.",2.02],["30. Oktober","30.10.",2.11],["6. November","6.11.",1.99]];
+function stBenzin(){
+  layout({kick:"Station 6 · Fall 2 Benzin, Aufgabe 9",title:"Benzinpreis: ein Liniendiagramm zeichnen",
+    left:`<div class="card"><table class="tb"><thead><tr><th>Datum (2026)</th><th>Preis Bleifrei 95 pro Liter</th><th></th></tr></thead><tbody>
+    ${BZ.map((b,i)=>`<tr id="r${i}"><td>${b[0]}</td><td>CHF ${b[2].toFixed(2)}</td><td class="chk"></td></tr>`).join("")}</tbody></table>
+    <p class="src" style="font-size:.8rem;color:var(--muted);margin-top:6px">Quelle: TCS, Durchschnittspreise Schweiz</p></div>
+    <details class="card help" open><summary>So gehen Sie vor</summary><ol><li>Fahren Sie mit der Maus über die Spalte mit dem richtigen Datum.</li><li>Gehen Sie hoch, bis die Anzeige unter dem Diagramm den richtigen Preis zeigt.</li><li>Klicken Sie. Klicken Sie nochmals in dieselbe Spalte, um den Punkt zu verschieben.</li></ol></details>`});
+  const zoom={x0:.4,x1:6.6,y0:1.55,y1:2.22,title:"Preis Bleifrei 95 in der Schweiz, 2026",xgrid:[1,2,3,4,5,6],ygrid:[1.6,1.7,1.8,1.9,2.0,2.1,2.2],
+    xticks:BZ.map((b,i)=>[i+1,b[1]]),yticks:[1.6,1.7,1.8,1.9,2.0,2.1,2.2].map(v=>[v,v.toFixed(2)]),brk:true,xlabel:"Datum",ylabel:"CHF pro Liter"};
+  const full=Object.assign({},zoom,{y0:0,y1:2.3,ygrid:[.5,1,1.5,2],yticks:[0,.5,1,1.5,2].map(v=>[v,v.toFixed(2)]),brk:false});
+  let vals=[null,null,null,null,null,null],phase="points",isZoom=true,ch;
+  const ok=i=>vals[i]!==null&&Math.abs(vals[i]-BZ[i][2])<=.015;
+  function build(){
+    ch=makeChart(isZoom?zoom:full);
+    ch.svg.addEventListener("pointermove",ev=>{if(!isZoom||phase==="end"||phase==="joined")return;const pt=svgPt(ch.svg,ev);if(!inPlot(ch,pt)){clear(ch.g.hover);return;}
+      const i=Math.round(ch.iX(pt.x)),y=Math.round(ch.iY(pt.y)*100)/100;if(i<1||i>6)return;
+      clear(ch.g.hover);E("line",{x1:ch.L,y1:ch.Y(y),x2:ch.X(i),y2:ch.Y(y),stroke:"#888","stroke-dasharray":"4 4"},ch.g.hover);
+      E("circle",{cx:ch.X(i),cy:ch.Y(y),r:7,fill:C.navy,opacity:.3},ch.g.hover);
+      $("#readout").innerHTML=phase==="line"?`Höhe: <b>${chf(y)}</b>`:`${BZ[i-1][0]} · <b>${chf(y)}</b>`;});
+    ch.svg.addEventListener("pointerdown",ev=>{if(!isZoom)return;const pt=svgPt(ch.svg,ev);if(!inPlot(ch,pt))return;
+      const y=Math.round(ch.iY(pt.y)*100)/100;
+      if(phase==="points"){const i=Math.round(ch.iX(pt.x));if(i<1||i>6)return;vals[i-1]=y;render();}
+      else if(phase==="line"){if(Math.abs(y-2)<=.012){phase="end";clear(ch.g.hover);render();fb("Richtig, die gestrichelte Linie liegt bei CHF 2.00.","ok");stepC();}
+        else fb(`Diese Höhe ist ${chf(y)}. Suchen Sie die Höhe CHF 2.00 auf der senkrechten Achse.`,"bad");}});
+    render();
+  }
+  function render(){
+    clear(ch.g.pts);clear(ch.g.lines);clear(ch.g.top);
+    if(phase!=="points"){const d=BZ.map((b,i)=>`${i?"L":"M"}${ch.X(i+1)},${ch.Y(b[2])}`).join(" ");
+      const p=E("path",{d,fill:"none",stroke:C.navy,"stroke-width":3},ch.g.lines);if(phase==="joined"&&!render.drawn){p.setAttribute("pathLength","1");p.setAttribute("class","draw");render.drawn=true;}}
+    if(phase==="end"){E("line",{x1:ch.L,y1:ch.Y(2),x2:ch.R,y2:ch.Y(2),stroke:C.red,"stroke-width":2,"stroke-dasharray":"8 6"},ch.g.top);
+      TX(ch.g.top,ch.R,ch.Y(2)+(isZoom?18:-8),"CHF 2.00",{class:"lab",fill:C.red,"text-anchor":"end"});}
+    vals.forEach((v,i)=>{if(v===null)return;E("circle",{cx:ch.X(i+1),cy:ch.Y(v),r:7,fill:ok(i)?C.navy:C.ma,stroke:"#fff","stroke-width":2},ch.g.pts);
+      const r=$("#r"+i);if(r){r.classList.toggle("ok",ok(i));r.querySelector(".chk").textContent=ok(i)?"✓":"";}});
+    if(phase==="points"){
+      const wrong=vals.map((v,i)=>v!==null&&!ok(i)?i:-1).filter(i=>i>=0);
+      if(wrong.length)fb(`Der Punkt beim <b>${BZ[wrong[0]][0]}</b> stimmt noch nicht (rot). Schauen Sie in der Tabelle nach und klicken Sie nochmals in diese Spalte.`,"bad");
+      else if(vals.every((v,i)=>ok(i))){fb("Alle sechs Punkte stimmen!","ok");
+        setTask(`<span class="num">Schritt 2</span><p>Verbinden Sie die Punkte zu einer Linie.</p><button class="btn" id="conn">Punkte verbinden</button>`);
+        $("#conn").onclick=()=>{phase="joined";clear(ch.g.hover);$("#readout").textContent="";render();fbOff();
+          setTask(`<span class="num">Schritt 3</span><p>Aufgabe 9b: Zeichnen Sie bei CHF 2.00 eine gestrichelte Linie. Klicken Sie dazu im Diagramm auf die Höhe von <b>CHF 2.00</b>.</p>`);phase="line";};}
+      else fbOff();
+    }
+  }
+  function stepC(){
+    setTask(`<span class="num">Schritt 4</span><p>Aufgabe 9c: Die senkrechte Achse beginnt bei CHF 1.60. Wechseln Sie die Ansicht und vergleichen Sie.</p>
+      <button class="btn" id="tog">Achse ab CHF 0 anzeigen</button><div id="qz"></div>`);
+    $("#tog").onclick=()=>{isZoom=!isZoom;build();$("#tog").textContent=isZoom?"Achse ab CHF 0 anzeigen":"Achse ab CHF 1.60 anzeigen";};
+    quiz($("#qz"),"Was fällt Ihnen beim Vergleich auf?",
+      ["Mit der Achse ab CHF 1.60 wirkt der Anstieg viel stärker, als er ist.","Beide Ansichten wirken genau gleich.","Mit der Achse ab CHF 0 wirkt der Anstieg stärker."],
+      0,"Schalten Sie nochmals zwischen beiden Ansichten hin und her und vergleichen Sie die Steigung der Linie.",
+      ()=>finish("b","bei Aufgabe 9 (beide Ansichten)","Wo die Achse beginnt, verändert den Eindruck. Beginnt die Achse nicht bei 0, wirken kleine Veränderungen gross. Schauen Sie deshalb immer zuerst auf die Achsen."));
+  }
+  setTask(`<span class="num">Schritt 1</span><p>Aufgabe 9a: Tragen Sie die sechs Werte aus der Tabelle als Punkte ein.</p>`);
+  build();
+}
+
+/* ---------- Station 7: Wohnungen ---------- */
+function stWohnung(){
+  layout({kick:"Station 7 · Fall 3 Wohnungen, Aufgabe 11a",title:"Wohnungen in Graubünden",
+    left:`<div class="ev"><div class="tag">Situation</div><div class="txt">In Graubünden sind nur 0.6 % aller Wohnungen frei. Viele Menschen suchen eine Wohnung, auch weil Erstwohnungen zu Ferienwohnungen umgebaut werden.</div><div class="prod">Markt: Mietwohnungen in Graubünden</div></div>
+    <div class="card"><p>Aufgabe 11a verlangt: Zeigen Sie, wie sich die <b>Nachfrage</b> verschoben hat und was mit der Miete passiert.</p></div>`});
+  shiftTool({curve:"N",dir:1,preset:true,cause:"der vielen Wohnungssuchenden",title:"Wohnungsmarkt Graubünden"},null,()=>
+    finish("w","bei Aufgabe 11a","Steigt die Nachfrage, verschiebt sich die Nachfragekurve nach rechts: Die Miete steigt. Bei Wohnungen kann das Angebot nur langsam folgen, weil Bauen lange dauert. Das ist Aufgabe 11b."));
+}
+
+go("start");
+</script>
+</body>
+</html>
